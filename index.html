@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="assets/logo/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+    <title>Snake Game</title>
+</head>
+<body>
+    <header>
+        <h1>Snake Game</h1>
+        <a href="https://github.com/diegovitorgomesdias" target="_blank"><img src="assets/logo/DG Square-White.png" alt="logo"></a>        
+    </header>
+
+    <aside>
+        <h2>Escolha o nível de dificuldade</h2>
+        <button onclick="start(1)" class="button-17">Easy</button>
+        <button onclick="start(2)" class="button-17">Normal</button>
+        <button onclick="start(3)" class="button-17">Hard</button>
+    </aside>
+
+    <main>
+        <div id="score">Score: <span id="scoreNumber">0</span></div>
+        <div id="tableGame"></div>
+    </main>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
