@@ -48,14 +48,13 @@ const setKey = (code) =>
 {
     codeDirection = ( moves[code] && !(moves[code]?.direction === moves[codeDirection]?.invalidDirection) ) 
     ? code : codeDirection;
-    move();
 }
 
 const start = (e) =>
 {
     if ( inGame ) return;
-    $aside.style.display = "none";
     inGame = true;
+    $aside.style.display = "none";
     const dificulty = e || (cenarioLength === 30 ? 1 : cenarioLength === 20 ? 2 : cenarioLength === 10 ? 3 : dificulty);
     cenarioLength = dificulty === 1 ? 30 : dificulty === 2 ? 20 : dificulty === 3 ? 10 : cenarioLength;
     applePosition = { x: cenarioLength / 2 + 1, y: cenarioLength / 2 };
@@ -64,7 +63,6 @@ const start = (e) =>
     codeDirection = "ArrowRight";
     velocity = 150;
     score = 0;
-    window.addEventListener("keyup", ({code}) => setKey(code));
     moveInterval = setInterval(() => move(), parseInt(velocity));
     show()
 }
@@ -81,54 +79,63 @@ const newGame = () =>
 const show = () =>
 {
     cenario2D =
-        Array.from( { length: cenarioLength }, (x, ix) => 
-        Array.from( { length: cenarioLength }, (y, iy) => 
-        ([0, cenarioLength - 1 ].includes(iy)) || ([0, cenarioLength - 1 ].includes(ix)) ? 2 : 0 ) )
+        Array.from( { length: cenarioLength }, (x, indexX) => 
+        Array.from( { length: cenarioLength }, (y, indexY) => 
+        ([0, cenarioLength - 1 ].includes(indexY)) || ([0, cenarioLength - 1 ].includes(indexX)) ? 2 : 0 ) )
     ;
     
+    //create apple and show snake
     cenario2D[applePosition.y][applePosition.x] = 1;
-    snake.forEach( e =>  cenario2D[e.y][e.x] = e.body);
+    snake.forEach( e => cenario2D[e.y][e.x] = e.body);
 
     $areaGame.innerHTML = cenario2D.flat().map( (e, indexMap) => 
-    {        
-        return `<img src="assets/snake/${elements[e]}" alt="${indexMap}" style="max-width: ${( cenarioLength === 30 ? 1 : cenarioLength === 20 ? 2 : 3 )}vw;" />` +
-        ( Array.from( {length: cenarioLength}, (newE,i) => i * cenarioLength - 1 ).includes(indexMap) ? "<br/>" : "");
+    {
+        return `
+        <img src="assets/snake/${elements[e]}" alt="${indexMap}" 
+            style="max-width: calc(100% / ${cenarioLength});"
+        />`
     }).join("");
+
+    window.addEventListener("keydown", ({ code }) => setKey(code), { once: true });
 }
 
 const move = () =>
 {
+    window.removeEventListener("keydown", () => {});
     snakeHeadPosition.x += moves[codeDirection]?.x || 0;
     snakeHeadPosition.y += moves[codeDirection]?.y || 0;
     snakeHeadPosition.body = moves[codeDirection]?.direction || snakeHeadPosition.body;
     snakeHeadPosition.invalidDirection = moves[codeDirection]?.invalidDirection || snakeHeadPosition.invalidDirection;
-    if ( ( cenario2D[snakeHeadPosition?.y][snakeHeadPosition?.x]) > 1  ) return newGame();
-    
+    if ( (cenario2D[snakeHeadPosition?.y][snakeHeadPosition?.x]) > 1 ) return newGame();
+
+    //new Position
     snake.unshift(JSON.parse(JSON.stringify(snakeHeadPosition)));
 
+    //body direction
     if ( snake.length > 2 )
     {
-        const hy = snake[0].y - snake[1].y
-        const hx = snake[0].x - snake[1].x
-        const by = snake[0].y - snake[2].y
-        const bx = snake[0].x - snake[2].x
+        const headY = snake[0].y - snake[1].y
+        const headX = snake[0].x - snake[1].x
+        const bodyY = snake[0].y - snake[2].y
+        const bodyX = snake[0].x - snake[2].x
         
-        if ( ( hy === 0 && by > 0 && hx > 0 && bx > 0 ) || ( hy < 0 && by < 0 && hx === 0 && bx < 0 ) ) 
+        if ( ( headY === 0 && bodyY > 0 && headX > 0 && bodyX > 0 ) || ( headY < 0 && bodyY < 0 && headX === 0 && bodyX < 0 ) ) 
         snake[1].body = 10; //body_topright
 
-        else if ( ( hy < 0 && by < 0 && hx === 0 && bx > 0 ) || ( hy === 0 && by > 0 && hx < 0 && bx < 0 ) ) 
+        else if ( ( headY < 0 && bodyY < 0 && headX === 0 && bodyX > 0 ) || ( headY === 0 && bodyY > 0 && headX < 0 && bodyX < 0 ) ) 
         snake[1].body = 9; //body_topleft
 
-        else if ( ( hy === 0 && by < 0 && hx > 0 && bx > 0 ) || ( hy > 0 && by > 0 && hx === 0 && bx < 0 ) ) 
+        else if ( ( headY === 0 && bodyY < 0 && headX > 0 && bodyX > 0 ) || ( headY > 0 && bodyY > 0 && headX === 0 && bodyX < 0 ) ) 
         snake[1].body = 8; //body_bottomright
 
-        else if ( ( hy === 0 && by < 0 && hx < 0 && bx < 0 ) || ( hy > 0 && by > 0 && hx === 0 && bx > 0 ) ) 
+        else if ( ( headY === 0 && bodyY < 0 && headX < 0 && bodyX < 0 ) || ( headY > 0 && bodyY > 0 && headX === 0 && bodyX > 0 ) ) 
         snake[1].body = 7; //body_bottomleft
 
-        else if ( hx === bx ) snake[1].body = 12; //body_horizontal
-        else if ( hy === by ) snake[1].body = 11; //body_vertical
+        else if ( headX === bodyX ) snake[1].body = 12; //body_horizontal
+        else if ( headY === bodyY ) snake[1].body = 11; //body_vertical
     }
 
+    //apple
     if ( cenario2D[snakeHeadPosition.y][snakeHeadPosition.x] === 1)
     {
         do {
@@ -140,6 +147,7 @@ const move = () =>
     }
     else snake.pop();
 
+    //tail
     if ( snake.length > 1 )
     {
         const x = snake[snake.length - 1].x - snake[snake.length - 2].x
